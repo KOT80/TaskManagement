@@ -1,0 +1,191 @@
+
+<section class="tasks-page">
+  <header class="page-header">
+    <div>
+      <h1>Задачи</h1>
+      <p class="page-description">
+        Управление задачами и отслеживание выполнения
+      </p>
+    </div>
+
+    <button
+      class="create-button"
+      type="button"
+      (click)="showCreateForm()"
+      [disabled]="store.operationInProgress()"
+    >
+      + Создать задачу
+    </button>
+  </header>
+
+  @if (store.operationError() && !isCreateFormVisible) {
+    <div class="form-error" role="alert">
+      {{ store.operationError() }}
+    </div>
+  }
+
+  @if (isCreateFormVisible) {
+    <section class="create-form-panel">
+      <h2>
+        {{ editingTaskId ? 'Редактирование задачи' : 'Новая задача' }}
+      </h2>
+
+      <form
+        #taskForm="ngForm"
+        (ngSubmit)="editingTaskId ? updateTask() : createTask()"
+      >
+        <label class="form-field">
+          <span>Название *</span>
+          <input
+            type="text"
+            name="title"
+            [(ngModel)]="title"
+            required
+            maxlength="200"
+            placeholder="Введите название задачи"
+          />
+        </label>
+
+        <label class="form-field">
+          <span>Описание</span>
+          <textarea
+            name="description"
+            [(ngModel)]="description"
+            rows="3"
+            placeholder="Введите описание задачи"
+          ></textarea>
+        </label>
+
+        @if (store.operationError()) {
+          <p class="form-error" role="alert">
+            {{ store.operationError() }}
+          </p>
+        }
+
+        <div class="form-actions">
+          <button
+            class="create-button"
+            type="submit"
+            [disabled]="taskForm.invalid || store.operationInProgress()"
+          >
+            {{ editingTaskId ? 'Сохранить' : 'Создать' }}
+          </button>
+
+          <button
+            type="button"
+            class="cancel-button"
+            [disabled]="store.operationInProgress()"
+            (click)="hideCreateForm()"
+          >
+            Отмена
+          </button>
+        </div>
+      </form>
+    </section>
+  }
+
+  <section class="tasks-panel">
+    <div class="tasks-toolbar">
+      <h2>Все задачи</h2>
+
+      <label class="filter">
+        <span>Статус:</span>
+        <select
+          [value]="store.filter() === undefined
+            ? 'all'
+            : store.filter()
+              ? 'completed'
+              : 'active'"
+          [disabled]="store.loading()"
+          (change)="store.setFilter(
+            $any($event.target).value === 'all'
+              ? undefined
+              : $any($event.target).value === 'completed'
+          )"
+        >
+          <option value="all">Все задачи</option>
+          <option value="completed">Выполненные</option>
+          <option value="active">Активные</option>
+        </select>
+      </label>
+    </div>
+
+    @if (store.loading()) {
+      <div class="empty-state" role="status">
+        <p>Загрузка задач...</p>
+      </div>
+    } @else if (store.error()) {
+      <div class="empty-state" role="alert">
+        <h3>Не удалось загрузить задачи</h3>
+        <p>{{ store.error() }}</p>
+       <button
+          class="status-button"
+          type="button"
+          [disabled]="store.loading()"
+          (click)="store.loadTasks()"
+        >
+          Повторить
+       </button>
+      </div>
+    } @else if (store.tasks().length === 0) {
+      <div class="empty-state">
+        <h3>Пока нет задач</h3>
+        <p>Созданные задачи появятся здесь.</p>
+      </div>
+    } @else {
+      <div class="task-list">
+        @for (task of store.tasks(); track task.id) {
+          <article class="task-item">
+            <div class="task-content">
+              <h3>{{ task.title }}</h3>
+
+              @if (task.description) {
+                <p>{{ task.description }}</p>
+              }
+
+              <span class="task-date">
+                Создана: {{ task.createdAt | date: 'dd.MM.yyyy HH:mm' }}
+              </span>
+            </div>
+
+            <div class="task-actions">
+              <span
+                class="task-status"
+                [class.completed]="task.isCompleted"
+              >
+                {{ task.isCompleted ? 'Выполнена' : 'Активна' }}
+              </span>
+
+              <button
+                class="status-button"
+                type="button"
+                [disabled]="store.operationInProgress()"
+                (click)="store.setTaskCompletion(task.id, !task.isCompleted)"
+              >
+                {{ task.isCompleted ? 'Вернуть в активные' : 'Завершить' }}
+              </button>
+
+              <button
+                class="edit-button"
+                type="button"
+                [disabled]="store.operationInProgress()"
+                (click)="editTask(task)"
+              >
+                Редактировать
+              </button>
+
+              <button
+                class="delete-button"
+                type="button"
+                [disabled]="store.operationInProgress()"
+                (click)="deleteTask(task.id)"
+              >
+                Удалить
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </section>
+</section>
