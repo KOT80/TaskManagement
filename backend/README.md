@@ -1,192 +1,106 @@
-\# TaskManagement Backend
+# TaskManagement Backend
 
+Веб-приложение для управления задачами — серверная часть (backend).
 
+## Технологии
 
-веб-приложение для управления задачами
+- .NET 10
+- ASP.NET Core Web API
+- C#
+- Entity Framework Core
+- PostgreSQL
+- MediatR
+- FluentValidation
+- xUnit — unit-тесты
 
+## Архитектура проекта
 
-
-backend
-
-\## Технологии
-
-
-
-\- .NET 10
-
-\- ASP.NET Core Web API
-
-\- C#
-
-\- Entity Framework Core
-
-\- PostgreSQL
-
-\- MediatR
-
-\- FluentValidation
-
-\- xUnit — unit-тесты
-
-
-
-\### TaskManagement.Api
-
-
+### TaskManagement.Api
 
 Внешний HTTP-слой приложения:
 
+- Контроллеры и обработка HTTP-запросов.
+- API-контракты.
+- Обработка исключений.
 
+### TaskManagement.Application
 
-\- контроллеры и обработка HTTP-запросов;
+Прикладная логика:
 
-\- API-контракты;
+- Команды и запросы для работы с задачами.
+- Обработчики MediatR.
+- DTO.
+- Интерфейсы репозиториев.
+- Валидация входных данных.
 
-\- обработка исключений;
+### TaskManagement.Domain
 
+Доменная модель и бизнес-правила.
 
-
-
-
-\### TaskManagement.Application
-
-
-
-\- команды и запросы для работы с задачами;
-
-\- обработчики MediatR;
-
-\- DTO;
-
-\- интерфейсы репозиториев;
-
-\- валидация входных данных.
-
-
-
-\### TaskManagement.Domain
-
-
-
-Доменная модель и бизнес-правила
-
-
-
-\### TaskManagement.Infrastructure
-
-
+### TaskManagement.Infrastructure
 
 Инфраструктурные реализации:
 
+- Entity Framework Core.
+- Контекст базы данных.
+- Миграции.
+- Репозитории.
 
-
-\- Entity Framework Core;
-
-\- контекст базы данных;
-
-\- миграции;
-
-\- репозитории.
-
-
-
-
-
-
-
-\## Настройка базы данных
-
-
+## Настройка базы данных
 
 Перед запуском API необходимо настроить строку подключения к PostgreSQL.
 
+Пример конфигурации в `appsettings.json`:
 
-
-Пример в appsettings.json
-
-&#x20; "ConnectionStrings": {
-
-&#x20;   "DefaultConnection": "Host=localhost;Port=5432;Database=task\_management;Username=postgres;Password=postgres"
-
-&#x20; }
-
-
-
-
-
-\## Запуск API
-
-
-
-Из каталога `backend`:
-
-
-
-```powershell
-
-dotnet restore .\\TaskManagement.slnx
-
-dotnet build .\\TaskManagement.slnx
-
-dotnet run --project .\\src\\TaskManagement.Api\\TaskManagement.Api.csproj
-
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5432;Database=task_management;Username=postgres;Password=postgres"
+  }
+}
 ```
 
 
 
+## Запуск API
 
-
-\## Миграции Entity Framework Core
-
-
-
-Для создания базы данных и применения миграций используйте EF Core CLI.
-
-
-
-Пример команды применения существующих миграций:
-
-
+Выполните команды из каталога `backend`:
 
 ```powershell
+dotnet restore .\TaskManagement.slnx
+dotnet build .\TaskManagement.slnx
+dotnet run --project .\src\TaskManagement.Api\TaskManagement.Api.csproj
+```
 
+## Миграции Entity Framework Core
+
+Для применения существующих миграций используйте EF Core CLI:
+
+```powershell
 dotnet ef database update `
-
-&#x20; --project .\\src\\TaskManagement.Infrastructure\\TaskManagement.Infrastructure.csproj `
-
-&#x20; --startup-project .\\src\\TaskManagement.Api\\TaskManagement.Api.csproj
-
+  --project .\src\TaskManagement.Infrastructure\TaskManagement.Infrastructure.csproj `
+  --startup-project .\src\TaskManagement.Api\TaskManagement.Api.csproj
 ```
 
+Для выполнения команды могут потребоваться:
 
+- Установленный инструмент `dotnet-ef`.
+- Пакет `Microsoft.EntityFrameworkCore.Design` в соответствующем проекте.
+- Настроенное подключение к PostgreSQL.
 
-Для этой команды может потребоваться пакет `Microsoft.EntityFrameworkCore.Design` в startup-проекте и установленный инструмент `dotnet-ef`. Конкретную конфигурацию следует проверить в `.csproj`.
+Перед применением миграций убедитесь, что строка подключения задана корректно.
 
+## Unit-тесты
 
-
-\## Unit-тесты
-
-
-
-Тестовый проект находится в `tests/TaskManagement.UnitTests`.
-
-
+Тестовый проект находится в каталоге `tests/TaskManagement.UnitTests`.
 
 В нём размещаются тесты доменной модели и прикладной логики, не требующие реальной базы данных.
 
-
-
-Запуск тестов после завершения настройки:
-
-
+Команда запуска тестов:
 
 ```powershell
-
-dotnet test .\\tests\\TaskManagement.UnitTests\\TaskManagement.UnitTests.csproj
-
+dotnet test .\tests\TaskManagement.UnitTests\TaskManagement.UnitTests.csproj
 ```
 
-
-
-
+Перед запуском убедитесь, что тестовый проект содержит необходимые пакеты и компилируется.
 
